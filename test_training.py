@@ -32,11 +32,12 @@ def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: in
 
     losses = []
     key = jr.PRNGKey(0)
+    beta = 1.0
     for _ in range(num_epochs):
         epoch_loss = 0.0
         for x in tokenized_strings:
             key, subkey = jr.split(key)
-            loss, params, opt_state = training.make_step(model, x, optim, opt_state, params, key=subkey)
+            loss, params, opt_state = training.make_step(model, x, optim, opt_state, params, beta, key=subkey)
             epoch_loss += loss
         losses.append(epoch_loss)
 
