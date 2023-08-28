@@ -2,6 +2,7 @@
 import random
 from jaxtyping import Int, Array
 import jax.numpy as jnp
+from torch.utils.data import Dataset
 
 
 def corrupt_string(reference: str, length: int, probability: float) -> list[str]:
@@ -28,6 +29,35 @@ def corrupt_string(reference: str, length: int, probability: float) -> list[str]
         output_list.append("".join(modified_string))
 
     return output_list
+
+
+class StringDataset(Dataset):
+    """Dataset of strings."""
+
+    def __init__(self, reference: str, length: int, probability: float):
+        """Initialise the dataset.
+
+        Args:
+            reference: The reference string.
+            length: The number of corrupted strings to be generated.
+            probability: The probability of a character being replaced.
+        """
+        self.reference = reference
+        self.corrupted_strings = corrupt_string(reference, length, probability)
+        self.num_cats = 27
+        self.d = len(self.corrupted_strings[0])
+
+    def __len__(self) -> int:
+        """Return the length of the dataset."""
+        return len(self.corrupted_strings)
+
+    def __getitem__(self, idx: int) -> Int[Array, "D"]:
+        """Return the corrupted string at the given index."""
+        return tokenize_string(self.corrupted_strings[idx])
+
+    def get_raw(self, idx: int) -> str:
+        """Return the raw string at the given index."""
+        return self.corrupted_strings[idx]
 
 
 def tokenize_string(reference: str) -> Int[Array, "D"]:
