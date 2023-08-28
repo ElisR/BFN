@@ -18,6 +18,7 @@ class InnerNetwork(nn.Module):
 
     def __call__(self, thetas: Float[Array, "K D"], t: float) -> Float[Array, "K D"]:
         """Return the output distribution of the model, given an underyling NN architecture."""
+        # TODO Condition on t
         thetas = self.category_mixer(thetas.T).T
         thetas = jnp.tanh(thetas)
         thetas = self.position_mixer(thetas)
@@ -41,13 +42,13 @@ class DiscreteOutputDistribution(nn.Module):
         return jax.nn.softmax(thetas_out, axis=-2)
 
 
-def loss(x: Int[Array, "D"], dist_params: PyTree, output_dist: DiscreteOutputDistribution, beta: float, *, key: Key) -> float:
+def loss(dist_params: PyTree, output_dist: DiscreteOutputDistribution, x: Int[Array, "D"], beta: float, *, key: Key) -> float:
     """Return the Bayesian Flow Networks discrete loss.
 
     Args:
-        x: Input array of integers, where integers are in the range [0, K).
         dist_params: Parameters of the neural network.
         output_dist: Neural network that transforms parameters of categorical distribution.
+        x: Input array of integers, where integers are in the range [0, K).
         beta: The final value of beta at t = 1.
         key: The random key to be used for sampling.
 
@@ -62,12 +63,11 @@ def loss(x: Int[Array, "D"], dist_params: PyTree, output_dist: DiscreteOutputDis
 
     oh_x = jax.nn.one_hot(x, k, axis=-2)
     normals = jr.normal(y_key, shape=(k, d))
-    # TODO Check variance or std
     y = beta_t * (k * oh_x - 1) + jnp.sqrt(beta_t * k) * normals
     thetas = jax.nn.softmax(y, axis=-2)
 
     # Apply the neural network
-    thetas_out = output_dist.apply(dist_params, thetas, t)
+    thetas_out = output_dist.apply({"params": dist_params}, thetas, t)
 
     l_infty = k * beta * t * jnp.linalg.norm(thetas_out - oh_x, ord=2)
     return l_infty
@@ -87,7 +87,7 @@ def sample(dist_params: PyTree, output_dist: DiscreteOutputDistribution, beta: f
         The sampled data.
     """
     num_cats, d = output_dist.K, output_dist.D
-    theta_prior = jnp.ones((num_cats, d)) / num_cats
+    theta_prior = jnp.ones((num_cats, d), dtype=jnp.float32) / num_cats
 
     def time_step(theta_key: tuple[Float[Array, "cats D"]], i: int):
         theta, key = theta_key
@@ -96,11 +96,10 @@ def sample(dist_params: PyTree, output_dist: DiscreteOutputDistribution, beta: f
         key, k_key, y_key = jr.split(key, 3)
 
         # Sample k
-        theta_k = output_dist.apply(dist_params, theta, t)
+        theta_k = output_dist.apply({"params": dist_params}, theta, t)
         k = jr.categorical(k_key, theta_k, axis=-2)
 
         # Sample y
-        # TODO Check variance or std
         oh_k = jax.nn.one_hot(k, num_cats, axis=-2)
         normals = jr.normal(y_key, shape=(num_cats, d))
         y = alpha * (num_cats * oh_k - 1) + jnp.sqrt(alpha * num_cats) * normals
