@@ -12,16 +12,13 @@ class InnerNetwork(nn.Module):
     K: int  # Number of categories
     D: int  # Number of variables
 
-    def setup(self):
-        self.position_mixer = nn.Dense(features=self.D)
-        self.category_mixer = nn.Dense(features=self.K)
-
+    @nn.compact
     def __call__(self, thetas: Float[Array, "K D"], t: float) -> Float[Array, "K D"]:
         """Return the output distribution of the model, given an underyling NN architecture."""
         # TODO Condition on t
-        thetas = self.category_mixer(thetas.T).T
+        thetas = nn.Dense(features=self.K, name="category_mixer")(thetas.T).T
         thetas = jnp.tanh(thetas)
-        thetas = self.position_mixer(thetas)
+        thetas = nn.Dense(features=self.D, name="position_mixer")(thetas)
         return thetas
 
 
