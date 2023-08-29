@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry]
+name = "bfn"
+version = "0.1.0"
+description = "Basic implementation of Bayesian Flow Networks."
+authors = ["Elis Roberts"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# Add your project dependencies here
+
+[tool.poetry.dev-dependencies]
+# Add your development dependencies here
+
+[tool.poetry.scripts]
+# Add your command-line scripts here

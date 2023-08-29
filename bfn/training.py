@@ -2,9 +2,10 @@
 import jax
 import jax.random as jr
 import jax.numpy as jnp
-import train_and_sample as tas
 from functools import partial
 import optax
+
+import bfn.train_and_sample as tas
 
 
 # TODO Make things work with batches

@@ -4,9 +4,9 @@ import jax.random as jr
 import optax
 from jaxtyping import Int, Array
 
-import example_data
-import training
-import train_and_sample as tas
+import bfn.example_data as example_data
+import bfn.training as training
+import bfn.train_and_sample as tas
 
 @pytest.fixture(name="tokenized_strings")
 def fixture_tokenized_strings():

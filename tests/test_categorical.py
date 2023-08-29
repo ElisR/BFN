@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import jax.random as jr
 import pytest
 
-import train_and_sample as tas
+import bfn.train_and_sample as tas
 
 # TODO Make fixture and split up unit tests
 
