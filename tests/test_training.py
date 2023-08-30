@@ -7,6 +7,7 @@ from jaxtyping import Int, Array
 import bfn.example_data as example_data
 import bfn.training as training
 import bfn.train_and_sample as tas
+import bfn.models as models
 
 @pytest.fixture(name="tokenized_strings")
 def fixture_tokenized_strings():
@@ -21,7 +22,7 @@ def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: in
     num_cats = 27
     d = len(tokenized_strings[0])
 
-    model = tas.DiscreteOutputDistribution(num_cats, d)
+    model = models.DiscreteOutputDistribution(num_cats, d)
     thetas_prior = jnp.ones((num_cats, d)) / num_cats
 
     variables = model.init(jr.PRNGKey(0), thetas_prior, 1.0)
@@ -43,6 +44,6 @@ def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: in
 
     assert len(losses) == num_epochs
 
-    output = tas.sample(params, model, 1.0, 10, key=key)
+    output, _ = tas.sample(params, model, 1.0, 10, key=key)
     output_string = example_data.detokenize_string(output)
     assert len(output_string) == d

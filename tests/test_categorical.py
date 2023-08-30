@@ -3,13 +3,14 @@ import jax.random as jr
 import pytest
 
 import bfn.train_and_sample as tas
+import bfn.models as models
 
 # TODO Make fixture and split up unit tests
 
 
 @pytest.mark.parametrize(("k", "d"), [(5, 10), (10, 5), (1, 1)])
 def test_discrete_output_distribution(k: int, d: int):
-    dod = tas.DiscreteOutputDistribution(k, d)
+    dod = models.DiscreteOutputDistribution(k, d)
 
     # Test distribution
     key, subkey1, subkey2 = jr.split(jr.PRNGKey(0), 3)
@@ -30,5 +31,7 @@ def test_discrete_output_distribution(k: int, d: int):
 
     # Test sampling
     key, subkey = jr.split(key)
-    final_sample = tas.sample(params, dod, 0.5, 100, key=subkey)
+    steps = 10
+    final_sample, thetas_output = tas.sample(params, dod, 0.5, steps, key=subkey)
     assert final_sample.shape == (d,)
+    assert thetas_output.shape[0] == steps
