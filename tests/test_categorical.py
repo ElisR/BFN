@@ -14,9 +14,10 @@ def test_discrete_output_distribution(k: int, d: int):
     # Test distribution
     key, subkey1, subkey2 = jr.split(jr.PRNGKey(0), 3)
     thetas_example = jr.uniform(subkey1, (k, d))
-    variables = dod.init(subkey2, thetas_example, 0.5)
+    t = jnp.array(0.5, dtype=jnp.float32)
+    variables = dod.init(subkey2, thetas_example, t)
     params = variables["params"]
-    out = dod.apply(variables, thetas_example, 0.5)
+    out = dod.apply(variables, thetas_example, t)
 
     assert isinstance(out, jnp.ndarray)
     assert out.shape == (k, d)

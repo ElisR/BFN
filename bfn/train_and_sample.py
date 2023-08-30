@@ -12,14 +12,16 @@ class InnerNetwork(nn.Module):
     K: int  # Number of categories
     D: int  # Number of variables
 
+    # TODO Consider turning time argument into a JAX array with a single float
     @nn.compact
-    def __call__(self, thetas: Float[Array, "K D"], t: float) -> Float[Array, "K D"]:
+    def __call__(self, thetas: Float[Array, "K D"], t: Float) -> Float[Array, "K D"]:
         """Return the output distribution of the model, given an underyling NN architecture."""
         # TODO Condition on t
+        residual = thetas
         thetas = nn.Dense(features=self.K, name="category_mixer")(thetas.T).T
-        thetas = jnp.tanh(thetas)
+        thetas = nn.gelu(thetas)
         thetas = nn.Dense(features=self.D, name="position_mixer")(thetas)
-        return thetas
+        return thetas + residual, None
 
 
 class DiscreteOutputDistribution(nn.Module):
@@ -28,14 +30,20 @@ class DiscreteOutputDistribution(nn.Module):
     D: int  # Number of variables
 
     @nn.compact
-    def __call__(self, thetas: Float[Array, "K D"], t: float) -> Float[Array, "K D"]:
+    def __call__(self, thetas: Float[Array, "K D"], t: Float) -> Float[Array, "K D"]:
         """Return the output distribution of the model, given an underyling NN architecture."""
-        # assert 0 <= t <= 1  # Get ConcretizationTypeError with this
-
         # Rescale thetas to be between -1 and 1 before sending to inner network
         thetas = 2 * thetas - 1
 
-        thetas_out = InnerNetwork(K=self.K, D=self.D)(thetas, t)
+        ScanInnerNetwork = nn.scan(
+            InnerNetwork,
+            variable_axes={"params": 0},
+            variable_broadcast=False,
+            in_axes=(nn.broadcast,),
+            split_rngs={"params": True},
+            length=10
+        )
+        thetas_out, _ = ScanInnerNetwork(self.K, self.D)(thetas, t)
         return jax.nn.softmax(thetas_out, axis=-2)
 
 
@@ -86,7 +94,7 @@ def sample(dist_params: PyTree, output_dist: DiscreteOutputDistribution, beta: f
     num_cats, d = output_dist.K, output_dist.D
     theta_prior = jnp.ones((num_cats, d), dtype=jnp.float32) / num_cats
 
-    def time_step(theta_key: tuple[Float[Array, "cats D"]], i: int):
+    def time_step(theta_key: tuple[Float[Array, "cats D"]], i: Int):
         theta, key = theta_key
         t = (i - 1) / n
         alpha = beta * (2 * i - 1) / (n**2)

@@ -8,7 +8,6 @@ import optax
 import bfn.train_and_sample as tas
 
 
-# TODO Make things work with batches
 @partial(jax.jit, static_argnums=(0, 2))
 def make_step(model, x, optim, opt_state, params, beta, *, key):
     """Calculate loss & grad and update model according to optimiser.
@@ -29,6 +28,7 @@ def make_step(model, x, optim, opt_state, params, beta, *, key):
     updates, opt_state = optim.update(grads, opt_state)
     params = optax.apply_updates(params, updates)
     return loss, params, opt_state
+
 
 @partial(jax.jit, static_argnums=(0, 2))
 def make_step_batch(model, x_batch, optim, opt_state, params, beta, *, key):
