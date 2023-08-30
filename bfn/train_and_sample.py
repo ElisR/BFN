@@ -16,11 +16,16 @@ class InnerNetwork(nn.Module):
     @nn.compact
     def __call__(self, thetas: Float[Array, "K D"], t: Float) -> Float[Array, "K D"]:
         """Return the output distribution of the model, given an underyling NN architecture."""
+        # Project t to radial basis functions in range [0, 1]
+        radial = jnp.exp(-(t - jnp.linspace(0, 1, num=self.K))**2)
+
         # TODO Condition on t
         residual = thetas
+        thetas = thetas + radial[:, None]
         thetas = nn.Dense(features=self.K, name="category_mixer")(thetas.T).T
         thetas = nn.gelu(thetas)
         thetas = nn.Dense(features=self.D, name="position_mixer")(thetas)
+        thetas = nn.gelu(thetas)
         return thetas + residual, None
 
 
@@ -28,6 +33,7 @@ class DiscreteOutputDistribution(nn.Module):
     """Module that takes in a set of thetas and returns new categorical distribution."""
     K: int  # Number of categories
     D: int  # Number of variables
+    scale: int = 2  # Scale of the inner network
 
     @nn.compact
     def __call__(self, thetas: Float[Array, "K D"], t: Float) -> Float[Array, "K D"]:
@@ -43,11 +49,13 @@ class DiscreteOutputDistribution(nn.Module):
             split_rngs={"params": True},
             length=10
         )
-        thetas_out, _ = ScanInnerNetwork(self.K, self.D)(thetas, t)
-        return jax.nn.softmax(thetas_out, axis=-2)
+        thetas = nn.Dense(features=self.scale*self.K)(thetas.T).T
+        thetas, _ = ScanInnerNetwork(self.scale*self.K, self.D)(thetas, t)
+        thetas = nn.Dense(features=self.K)(thetas.T).T
+        return jax.nn.softmax(thetas, axis=-2)
 
 
-def loss(dist_params: PyTree, output_dist: DiscreteOutputDistribution, x: Int[Array, "D"], beta: float, *, key: Key) -> float:
+def loss(dist_params: PyTree, output_dist: nn.Module, x: Int[Array, "D"], beta: float, *, key: Key) -> float:
     """Return the Bayesian Flow Networks discrete loss.
 
     Args:
@@ -78,7 +86,7 @@ def loss(dist_params: PyTree, output_dist: DiscreteOutputDistribution, x: Int[Ar
     return l_infty
 
 
-def sample(dist_params: PyTree, output_dist: DiscreteOutputDistribution, beta: float, n: int, *, key: Key) -> Float[Array, "cats"]:
+def sample(dist_params: PyTree, output_dist: nn.Module, beta: float, n: int, *, key: Key) -> Float[Array, "cats"]:
     """Sample from the Bayesian Flow Network for discrete data.
 
     Args:
@@ -111,10 +119,10 @@ def sample(dist_params: PyTree, output_dist: DiscreteOutputDistribution, beta: f
 
         theta_prime = jnp.exp(y) * theta
         theta = theta_prime / jnp.sum(theta_prime, axis=-2, keepdims=True)
-        return (theta, key), k
+        return (theta, key), theta
 
     i_s = jnp.arange(1, n + 1)
-    (theta, key), _ = jax.lax.scan(time_step, (theta_prior, key), i_s)
+    (theta, key), theta_timeline = jax.lax.scan(time_step, (theta_prior, key), i_s)
 
     k = jr.categorical(key, theta, axis=-2)
-    return k
+    return k, theta_timeline
