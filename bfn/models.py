@@ -15,12 +15,13 @@ class InnerNetwork(nn.Module):
     @nn.compact
     def __call__(self, thetas: Float[Array, "K D"], t: Float) -> Float[Array, "K D"]:
         """Return the output distribution of the model, given an underyling NN architecture."""
-        # Project t to radial basis functions in range [0, 1]
-        radial = jnp.exp(-(t - jnp.linspace(0, 1, num=self.K))**2)
-
-        # TODO Condition on t
         residual = thetas
-        thetas = thetas + radial[:, None]
+
+        # An arbitrary way to condition on time
+        # Project t to radial basis functions in range [0, 1]
+        #radial = jnp.exp(-(t - jnp.linspace(0, 1, num=self.K))**2)
+        #thetas = thetas + nn.Dense(features=self.K)(radial)[:, None]
+
         thetas = nn.Dense(features=self.K, name="category_mixer")(thetas.T).T
         thetas = nn.gelu(thetas)
         thetas = nn.Dense(features=self.D, name="position_mixer")(thetas)
