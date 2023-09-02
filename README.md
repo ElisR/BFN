@@ -25,11 +25,11 @@ In one case the parameters will be the mean and standard deviation of a Gaussian
 Corrupting data can always be interpreted the same way: smoothing out each probability distribution through convolution with a noise kernel, then sampling from the resulting distribution.
 Hence for discrete variables, there is no need to define a Markov transition kernel or a map to a continuous embedding space.
 
-It also turns out that in all cases we are indirectly trying to maximise the log-likelihood of the data through the evidence lower bound (ELBO).[^3]
+It also turns out that in all cases training is just maximising the log-likelihood of the data through the evidence lower bound (ELBO), without any surrogate losses needed.[^3]
 
 [^3]: In the paper they first present this ELBO as the expected number of bits required for Alice, who has access to the true data, to transmit it to Bob according to the scheme described above.
-In this interpretation Alice sends latent variables---increasingly revealing noisy observations of the true data---to Bob, who continually updates his posterior belief of the factorised distribution according to Bayesian inference and a neural network.
-The estimate for the number of bits assumes that Alice is sending latent variables then finally the true data according to an efficient _bits-back_ encoding scheme.
+In this interpretation Alice sends latent variables—increasingly revealing noisy observations of the true data—to Bob, who continually updates his posterior belief of the factorised distribution according to Bayesian inference and a neural network.
+The estimate for the number of bits assumes that Alice sends latent variables and finally the true data according to an efficient _bits-back_ encoding scheme.
 
 ## 😃 Examples
 
