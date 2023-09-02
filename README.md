@@ -8,11 +8,12 @@
 
 BFNs are a new class of generative models that share some philosophy of diffusion models: they both try to model a complex probability distribution by learning the data distribution under various levels of corruption. [^1]
 In diffusion models, a neural network acts on the space of the data itself, e.g. (in the reverse process) taking as input the noisy value of every pixel and outputting a (hopefully less noisy) estimate for every pixel.[^2]
-In BFNs, the neural network acts on the space of _parametrised probability distributions_ for each factorised component of the data, e.g. each pixel intensity is parametrised by the mean and standard deviation of a Gaussian distribution, and the neural network inputs and outputs estimates of the means and standard deviations for each pixel.
+In BFNs, the neural network acts on the space of _parametrised probability distributions_ for each factorised component of the data, e.g. each pixel intensity is parametrised by a mean and standard deviation of a Gaussian distribution, and the neural network inputs and outputs estimated means and standard deviations for each pixel.
 
-Whereas during the generative process diffusion models start with an image that consists of pure noise, BFNs start with a uniform prior over the individual parameters of each pixel's probability distribution.
+Whereas during the reverse process diffusion models start with an image that consists of pure noise, BFNs start with a uniform prior over the individual parameters of each pixel's probability distribution.
 In each step during training, the model gets to view a corrupted version of each pixel (with the level of corruption pre-determined according to some set noise schedule), and the pixel parameters are updated according to the rules of Bayesian inference.
-The neural network then gets another go at estimating the parameters of the pixel distributions. These steps until barely any noise is being added to the true image, much like in diffusion models.
+The neural network then gets another go at estimating the parameters of the pixel distributions while viewing the current best-guess parameters for every pixel simultaneously (this is where pixel correlations come in).
+These steps repeat until barely any noise is being added to the true image, much like in diffusion models.
 Conceptually, with BFN there is no need to have in mind a forward diffusion process whose reverse we are trying to match: we are just starting with prior beliefs about parameters, then updating our beliefs during the "reverse" process according to a combination of Bayesian inference and a neural network.
 
 [^1]: The success of diffusion models shows that this is seemingly easier than trying to learn the data distribution directly.
