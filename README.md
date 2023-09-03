@@ -44,9 +44,9 @@ The Bayesian Flow Network [preprint](https://arxiv.org/abs/2308.07037) is quite 
 
 Below are some notebooks that interactively demonstrate some concepts in the paper.
 
-### 📊 [Visualising Bayesian Flow for Discrete Variables](./Visualising_Flow.ipynb)
+### 📊 [Visualising Bayesian Flow for Discrete Variables](./examples/Visualising_Discrete_Flow.ipynb)
 
-### ⚖️ [Training a Simple Discrete "Diffusion" Model over Text](./BFN_Experiment.ipynb)
+### ⚖️ [Training a Simple Discrete "Diffusion" Model on Text Characters](./examples/Discrete_BFN_Training.ipynb)
 
 
 ## 📁 Repository
