@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import pytest
 
-from bfn.example_data import detokenize_string, tokenize_string
+from bfn.discrete.example_data import detokenize_string, tokenize_string
 
 
 @pytest.mark.parametrize("input_string, expected_output", [

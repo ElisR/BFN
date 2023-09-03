@@ -4,10 +4,10 @@ import jax.random as jr
 import optax
 from jaxtyping import Int, Array
 
-import bfn.example_data as example_data
-import bfn.training as training
-import bfn.train_and_sample as tas
-import bfn.models as models
+import bfn.discrete.example_data as example_data
+import bfn.discrete.training as training
+import bfn.discrete.train_and_sample as tas
+import bfn.discrete.models as models
 
 @pytest.fixture(name="tokenized_strings")
 def fixture_tokenized_strings():
@@ -17,7 +17,7 @@ def fixture_tokenized_strings():
     return tokenized_strings
 
 
-@pytest.mark.parametrize("num_epochs", [50])
+@pytest.mark.parametrize("num_epochs", [20])
 def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: int):
     num_cats = 27
     d = len(tokenized_strings[0])

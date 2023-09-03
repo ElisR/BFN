@@ -2,8 +2,8 @@ import jax.numpy as jnp
 import jax.random as jr
 import pytest
 
-import bfn.train_and_sample as tas
-import bfn.models as models
+import bfn.discrete.train_and_sample as tas
+import bfn.discrete.models as models
 
 # TODO Make fixture and split up unit tests
 
