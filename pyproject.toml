@@ -1,19 +1,24 @@
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "bfn"
 version = "0.1.0"
-description = "Basic implementation of Bayesian Flow Networks."
+description = "Basic implementation of Bayesian Flow Networks in JAX"
 authors = ["Elis Roberts"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-# Add your project dependencies here
+jax = "^0.4.13"
+jaxlib = "^0.4.13"
+optax = "^0.1.5"
+flax = "^0.7.2"
+jaxtyping = "^0.2.20"
+torch = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
-# Add your development dependencies here
+pytest = "^7.4.0"
 
 [tool.poetry.scripts]
 # Add your command-line scripts here
