@@ -2,7 +2,7 @@
 
 > An unofficial implementation of [Bayesian Flow Networks](https://arxiv.org/abs/2308.07037) (BFNs) for discrete variables in JAX.
 
-![Ternary diagram of BFNs](./ternary.svg)
+![Ternary diagram of BFNs](./examples/ternary.svg)
 
 ## ❓ What are Bayesian Flow Networks?
 

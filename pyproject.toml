@@ -7,6 +7,7 @@ name = "bfn"
 version = "0.1.0"
 description = "Basic implementation of Bayesian Flow Networks in JAX"
 authors = ["Elis Roberts"]
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
