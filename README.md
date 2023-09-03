@@ -8,11 +8,11 @@
 
 BFNs are a new class of generative models that share some philosophy of diffusion models: they both try to model a complex probability distribution by iteratively learning the data distribution under various levels of corruption.[^1]
 In diffusion models, a neural network acts on the space of the data itself, e.g. (in the reverse process) taking as input the noisy value of every pixel and outputting a (hopefully less noisy) estimate for every pixel.[^2]
-In BFNs, the neural network acts on the space of _parametrised probability distributions_ for each factorised component of the data, e.g. each pixel intensity is parametrised by a mean and standard deviation of a Gaussian distribution, and the neural network inputs and outputs estimated means and standard deviations for each pixel.
+In BFNs, the neural network acts on the space of _parametrised probability distributions_ for each factorised component of the data, e.g. each pixel intensity is parametrised by a mean and standard deviation of a Gaussian distribution, while inputs and outputs of the neural network are the estimated means and standard deviations for each pixel.
 
-Whereas during the reverse process diffusion models start with an image that consists of pure noise, BFNs start with a uniform prior over the individual parameters of each pixel's probability distribution.
-In each step during training, the model gets to view a corrupted version of each pixel (with the level of corruption pre-determined according to some set noise schedule), and the pixel parameters are updated according to the rules of Bayesian inference.
-The neural network then gets another go at estimating the parameters of the pixel distributions while viewing the current best-guess parameters for every pixel simultaneously (this is where pixel correlations come in).
+Whereas in the reverse process diffusion models start with an image that consists of pure noise, BFNs start with a uniform prior over the individual parameters of each pixel's probability distribution.
+In each step during training, the model gets to view a corrupted version of each pixel (with the level of corruption set by the noise schedule), and the pixel parameters are updated according to the rules of Bayesian inference.
+The neural network then sees all pixel distributions simultaneously and gets another go at updating the parameters of the pixel distributions (which is how pixel correlations get learnt).
 These steps repeat until barely any noise is being added to the true image, much like in diffusion models.
 Conceptually, with BFN there is no need to have in mind a forward diffusion process whose reverse we are trying to match: we are just starting with prior beliefs about parameters, then updating our beliefs during the "reverse" process according to a combination of Bayesian inference and a neural network.
 
@@ -21,16 +21,16 @@ Conceptually, with BFN there is no need to have in mind a forward diffusion proc
 
 ### 😏 Why are they so interesting for generative models of discrete variables?
 
-Acting on the parameters of a factorised probability distribution allows a consistent framework for modelling both continuous and discrete variables (and discretised continuous variables).
-In one case the parameters will be the mean and standard deviation of a Gaussian distribution, in the other case the parameters are the logits of a categorical distribution.
+Acting on the parameters of a factorised probability distribution allows a consistent framework for modelling both continuous and discrete variables (and discretised continuous variables in the middle!).
+In one case the parameters are the means and standard deviations of Gaussian distributions, and in the other case the parameters are the logits of categorical distributions.
+On both cases the parameters are real numbers.
 Corrupting data can always be interpreted the same way: smoothing out each probability distribution through convolution with a noise kernel, then sampling from the resulting distribution.
-Hence for discrete variables, there is no need to define a Markov transition kernel or a map to a continuous embedding space.
+Hence for discrete variables, there is no need to define a Markov transition kernel or map to a continuous embedding space to diffuse.
 
 It also turns out that in all cases training is just maximising the log-likelihood of the data through the evidence lower bound (ELBO), without any auxiliary losses needed.[^3]
 
-Furthermore, there are no restrictions placed on the architecture of the neural network: all it has to do is take as input a tensor of shape `(num_params, length)` and output a tensor of equal size.
+Furthermore, there are no restrictions placed on the architecture of the neural network because all it has to do is take as input a tensor of shape `(num_params, length)` and output a tensor of equal size.
 When modelling discrete variables such as text tokens, many transformers already accept one-hot encoded tensors and output logits with that exact shape, so minimal modifications are needed to get up and running.
-(One may also want to condition the neural network on the noise level.)
 The BFN paper quotes a bits-per-character score on the `text8` character-level dataset better than other discrete diffusion models like Multinomial Diffusion and D3PM.[^4] 
 
 [^3]: In the paper they first present this ELBO as the expected number of bits required for Alice, who has access to the true data, to transmit it to Bob according to the BFN scheme described above.
@@ -85,3 +85,4 @@ pip install -e .
 - [ ] Basic tests for discrete case.
 - [ ] Bayesian flow visualisation for discrete distribution.
 - [ ] Loss function and sampling for continuous probability distribution.
+- [ ] Add `requirements.txt` and fix build.
