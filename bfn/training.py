@@ -47,6 +47,7 @@ def make_step_batch(model, x_batch, optim, opt_state, params, beta, *, key):
         The loss, updated parameters, and updated optimiser state.
     """
     batch_size = x_batch.shape[0]
+
     def loss_for_batch(params, key):
         keys = jr.split(key, batch_size)
         loss = jnp.mean(jax.vmap(tas.loss, in_axes=(None, None, 0, None))(params, model, x_batch, beta, key=keys))

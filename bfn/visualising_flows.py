@@ -65,7 +65,7 @@ def sample_theta(
     x: Int[Array, "D"], num_cats: int, beta_1: float, n: int, *, key: Key
 ) -> Float[Array, "steps cats D"]:
     r"""Produce a stochastic trajectory of categorical distribution parameters.
-    
+
     $\boldsymbol{\theta}_i \leftarrow h(\boldsymbol{\theta}_{i-1}, \mathbf{y}, \alpha)$$
 
     Args:
@@ -74,7 +74,7 @@ def sample_theta(
         beta_1: The final value of beta at t = 1.
         n: The number of sampling steps.
         key: The random key.
-    
+
     Returns:
         A trajectory of categorical distribution parameters.
     """
