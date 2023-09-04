@@ -48,6 +48,7 @@ Below are some notebooks that interactively demonstrate some concepts in the pap
 
 ### ⚖️ [Training a Simple Discrete "Diffusion" Model on Text Characters](./examples/Discrete_BFN_Training.ipynb)
 
+### 📈 [Visualising Bayesian Flow for Continuous Variables](./examples/Visualising_Continuous_Flow.ipynb)
 
 ## 📁 Repository
 
