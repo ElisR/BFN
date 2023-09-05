@@ -31,7 +31,7 @@ It also turns out that in all cases training is just maximising the log-likeliho
 
 Furthermore, there are no restrictions placed on the architecture of the neural network because all it has to do is take as input a tensor of shape `(num_params, length)` and output a tensor of equal size.
 When modelling discrete variables such as text tokens, many transformers already accept one-hot encoded tensors and output logits with that exact shape, so minimal modifications are needed to get up and running.
-The BFN paper quotes a bits-per-character score on the `text8` character-level dataset better than other discrete diffusion models like Multinomial Diffusion and D3PM.[^4] 
+The BFN paper quotes a bits-per-character score on the `text8` dataset better than other discrete diffusion models like Multinomial Diffusion and D3PM.[^4] 
 
 [^3]: In the paper they first present this ELBO as the expected number of bits required for Alice, who has access to the true data, to transmit it to Bob according to the BFN scheme described above.
 In this interpretation Alice sends latent variables—increasingly revealing noisy observations of the true data—to Bob, who continually updates his posterior belief of the factorised distribution according to Bayesian inference and a neural network.
@@ -84,6 +84,7 @@ pip install -e .
 - [x] Loss function and sampling for discrete distributions.
 - [x] Simple discrete training example notebook.
 - [ ] Basic tests for discrete case.
-- [ ] Bayesian flow visualisation for discrete distribution.
+- [x] Bayesian flow visualisation for discrete distribution.
+- [x] Bayesian flow visualisation for continuous distribution.
 - [ ] Loss function and sampling for continuous probability distribution.
 - [ ] Add `requirements.txt` and fix build.
