@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import jax.random as jr
 import pytest
 
-import bfn.discrete.train_and_sample as tas
+import bfn.discrete.loss_and_sample as las
 import bfn.discrete.models as models
 
 # TODO Make fixture and split up unit tests
@@ -26,12 +26,12 @@ def test_discrete_output_distribution(k: int, d: int):
     # Test loss
     key, subkey1, subkey2 = jr.split(key, 3)
     x = jr.randint(subkey1, shape=(d,), minval=0, maxval=k)
-    loss_eval = tas.loss(params, dod, x, 0.5, key=subkey2)
+    loss_eval = las.loss(params, dod, x, 0.5, key=subkey2)
     assert loss_eval.shape == ()
 
     # Test sampling
     key, subkey = jr.split(key)
     steps = 10
-    final_sample, thetas_output = tas.sample(params, dod, 0.5, steps, key=subkey)
+    final_sample, thetas_output = las.sample(params, dod, 0.5, steps, key=subkey)
     assert final_sample.shape == (d,)
     assert thetas_output.shape[0] == steps

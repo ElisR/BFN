@@ -6,7 +6,7 @@ from jaxtyping import Int, Array
 
 import bfn.discrete.example_data as example_data
 import bfn.discrete.training as training
-import bfn.discrete.train_and_sample as tas
+import bfn.discrete.loss_and_sample as las
 import bfn.discrete.models as models
 
 @pytest.fixture(name="tokenized_strings")
@@ -45,6 +45,6 @@ def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: in
 
     assert len(losses) == num_epochs
 
-    output, _ = tas.sample(params, model, 1.0, 10, key=key)
+    output, _ = las.sample(params, model, 1.0, 10, key=key)
     output_string = example_data.detokenize_string(output)
     assert len(output_string) == d

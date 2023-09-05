@@ -8,7 +8,7 @@ import optax
 
 from jaxtyping import Array, Int, Key, PyTree
 
-import bfn.discrete.train_and_sample as tas
+import bfn.discrete.loss_and_sample as las
 
 
 @partial(jax.jit, static_argnums=(0, 2))
@@ -41,7 +41,7 @@ def make_step(
     def loss_for_batch(params, key):
         keys = jr.split(key, batch_size)
         loss = jnp.mean(
-            jax.vmap(tas.loss, in_axes=(None, None, 0, None))(
+            jax.vmap(las.loss, in_axes=(None, None, 0, None))(
                 params, model, x_batch, beta_1, key=keys
             )
         )
