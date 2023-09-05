@@ -38,6 +38,7 @@ def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: in
         epoch_loss = 0.0
         for x in tokenized_strings:
             key, subkey = jr.split(key)
+            x = jnp.expand_dims(x, 0)
             loss, params, opt_state = training.make_step(model, x, optim, opt_state, params, beta, key=subkey)
             epoch_loss += loss
         losses.append(epoch_loss)
