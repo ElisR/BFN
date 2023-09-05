@@ -1,4 +1,4 @@
-"""Functions for Baysian Flow Networks that are not used for training or sampling."""
+"""Functions for visualising the Bayesian flow for discrete probability distributions."""
 from functools import partial
 
 import jax
@@ -80,6 +80,7 @@ def sample_theta(
     """
     d = x.shape[-1]
     theta_prior = jnp.ones((num_cats, d), dtype=jnp.float32) / num_cats
+    oh_x = jax.nn.one_hot(x, num_cats, axis=-2)
 
     def time_step(theta_key: tuple[Float[Array, "cats D"], Key], i: Int):
         theta, key = theta_key
@@ -87,7 +88,6 @@ def sample_theta(
         key, y_key = jr.split(key, 2)
 
         # Sample y
-        oh_x = jax.nn.one_hot(x, num_cats, axis=-2)
         normals = jr.normal(y_key, shape=(num_cats, d))
         y = alpha * (num_cats * oh_x - 1) + jnp.sqrt(alpha * num_cats) * normals
 
@@ -96,6 +96,5 @@ def sample_theta(
         return (theta, key), theta
 
     i_s = jnp.arange(1, steps + 1)
-    (_, _), theta_timeline = jax.lax.scan(time_step, (theta_prior, key), i_s)
-
+    _, theta_timeline = jax.lax.scan(time_step, (theta_prior, key), i_s)
     return theta_timeline

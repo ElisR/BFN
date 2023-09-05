@@ -1,1 +1,1 @@
-"""This module contains functions for BFN acting on categorical distributions."""
+"""Module with functions for BFN acting on categorical distributions."""
