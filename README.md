@@ -67,7 +67,7 @@ pip install -e .
 - [`/bfn/`](./bfn/)
   - [`/discrete/`](./bfn/discrete/)
     - [`training.py`](./bfn/discrete/training.py)
-    - [`train_and_sample.py`](./bfn/discrete/train_and_sample.py)
+    - [`loss_and_sample.py`](./bfn/discrete/loss_and_sample.py)
     - [`example_data.py`](./bfn/discrete/example_data.py)
     - [`visualising_flows.py`](./bfn/discrete/visualising_flows.py)
   - [`/continuous/`](./bfn/continuous/)
