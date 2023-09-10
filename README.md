@@ -50,6 +50,8 @@ Below are some notebooks that interactively demonstrate some concepts in the pap
 
 ### 📈 [Visualising Bayesian Flow for Continuous Variables](./examples/Visualising_Continuous_Flow.ipynb)
 
+### 📉 [Training a Simple Continuous "Diffusion" Model on Images](./examples/Continuous_BFN_Training.ipynb)
+
 ## 📁 Repository
 
 ### ⚙️ Installation
@@ -86,5 +88,5 @@ pip install -e .
 - [ ] Basic tests for discrete case.
 - [x] Bayesian flow visualisation for discrete distribution.
 - [x] Bayesian flow visualisation for continuous distribution.
-- [ ] Loss function and sampling for continuous probability distribution.
-- [ ] Add `requirements.txt` and fix build.
+- [x] Loss function and sampling for continuous probability distribution.
+- [x] Create a working `pyproject.toml`.
