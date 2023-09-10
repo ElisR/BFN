@@ -50,7 +50,7 @@ Below are some notebooks that interactively demonstrate some concepts in the pap
 
 ### 📈 [Visualising Bayesian Flow for Continuous Variables](./examples/Visualising_Continuous_Flow.ipynb)
 
-### 📉 [Training a Simple Continuous "Diffusion" Model on Images](./examples/Continuous_BFN_Training.ipynb)
+### 📉 [Training a Simple Continuous "Diffusion" Model on Single Variables](./examples/Continuous_BFN_Training.ipynb)
 
 ## 📁 Repository
 
