@@ -39,8 +39,6 @@ def sample(
 ) -> Float[Array, "D"]:
     """Sample from the Bayesian Flow Network for continuous data.
 
-    # TODO Fix t = 0 breaking sampling
-
     Args:
         dist_params: Parameters of the neural network.
         output_dist: Neural network that transforms parameters of categorical distribution.
@@ -66,8 +64,7 @@ def sample(
         mu = (rho * mu + alpha * y) / (rho + alpha)
         rho = rho + alpha
         return (mu, rho, key), mu
-
-    (mu, _, _), mu_timeline = jax.lax.scan(time_step, (mu_prior, rho_0, key), jnp.arange(1, steps + 1))
+    (mu, _, _), _ = jax.lax.scan(time_step, (mu_prior, rho_0, key), jnp.arange(1, steps + 1))
 
     x_hat = output_dist.apply({"params": dist_params}, mu, jnp.array(1.0), 1 - jnp.power(sigma_1, 2))
-    return x_hat, mu_timeline
+    return x_hat
