@@ -15,7 +15,7 @@ import bfn.continuous.loss_and_sample as las
 def make_step(
     model: nn.Module,
     x_batch: Int[Array, "N D"],
-    optim,
+    optim: optax.GradientTransformation,
     opt_state,
     params: PyTree,
     sigma_1: float,
@@ -48,6 +48,6 @@ def make_step(
         return loss
 
     loss, grads = jax.value_and_grad(loss_for_batch)(params, key)
-    updates, opt_state = optim.update(grads, opt_state)
+    updates, opt_state = optim.update(grads, opt_state, params)
     params = optax.apply_updates(params, updates)
     return loss, params, opt_state
