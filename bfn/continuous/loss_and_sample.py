@@ -16,8 +16,19 @@ def loss(
     sigma_1: float,
     *,
     key: Key
-) -> float:
-    """Return continuous-time Bayesian Flow Networks continuous loss."""
+) -> Float:
+    """Return continuous-time Bayesian Flow Networks continuous loss.
+
+    Args:
+        dist_params: Parameters of the neural network.
+        output_dist: Neural network that transforms parameters of categorical distribution.
+        x: The input data, a JAX array of floats of shape (D,).
+        sigma_1: The final value of sigma at t = 1.
+        key: The random key to be used during loss calculation.
+
+    Returns:
+        The loss.
+    """
     d = output_dist.D
     assert x.shape == (d,)
 
