@@ -48,17 +48,18 @@ def test_mixer_block(d: int, mix_patch_size: int, mix_hidden_size: int):
     example_x = jr.uniform(data_key, (2, d))
 
     variables = model.init(params_key, example_x)
-    out = model.apply(variables, example_x)
+    out, _ = model.apply(variables, example_x)
     assert out.shape == example_x.shape
 
 
 def test_continuous_mixer():
     d = 784
+    size = int(jnp.sqrt(d))
 
     data_key, params_key = jr.split(jr.PRNGKey(0), 2)
     example_x = jr.uniform(data_key, (d,))
 
-    model = models.ContinuousOutputDistributionMixer(D=d, num_blocks=4, patch_size=4, hidden_size=64, mix_patch_size=4, mix_hidden_size=4)
+    model = models.ContinuousOutputDistributionMixer(D=d, size=size, num_blocks=4, patch_size=4, hidden_size=64, mix_patch_size=4, mix_hidden_size=4)
 
     t = jnp.array(0.5)
     sigma_1 = 0.1

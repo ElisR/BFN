@@ -162,7 +162,7 @@ class ContinuousOutputDistributionMixer(nn.Module):
 
     x_min: float = -1.0  # Lower clipping threshold
     x_max: float = 1.0  # Upper clipping threshold
-    t_min: float = 1e-5  # Threshold at which x is set to zero
+    t_min: float = 1e-10  # Threshold at which x is set to zero
 
     @nn.compact
     def __call__(self, mu: Float[Array, "D"], t: Float, gamma: Float):
