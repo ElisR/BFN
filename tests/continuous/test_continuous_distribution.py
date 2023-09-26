@@ -9,7 +9,7 @@ import bfn.continuous.models_mnist as models_mnist
 
 @pytest.mark.parametrize(("d",), [(5,), (10,), (1,)])
 def test_continuous_output_distribution(d: int):
-    model = models.ContinuousOutputDistribution(d)
+    model = models.ContinuousOutputDistribution((d,))
 
     key, subkey1, subkey2 = jr.split(jr.PRNGKey(0), 3)
     example_x = jr.uniform(subkey1, (d,))
@@ -39,26 +39,26 @@ def test_continuous_output_distribution(d: int):
     assert final_sample.shape == (d,)
 
 
-@pytest.mark.parametrize(("d", "mix_patch_size", "mix_hidden_size"), [(5, 2, 3), (10, 3, 4), (1, 1, 1)])
-def test_mixer_block(d: int, mix_patch_size: int, mix_hidden_size: int):
+@pytest.mark.parametrize(("size", "mix_patch_size", "mix_hidden_size"), [(5, 2, 3), (10, 3, 4), (1, 1, 1)])
+def test_mixer_block(size: int, mix_patch_size: int, mix_hidden_size: int):
     model = models_mnist.MixerBlock(mix_patch_size, mix_hidden_size)
 
     data_key, params_key = jr.split(jr.PRNGKey(0), 2)
-    example_x = jr.uniform(data_key, (2, d))
+    example_x = jr.uniform(data_key, (size, size, 2))
 
     variables = model.init(params_key, example_x)
     out, _ = model.apply(variables, example_x)
     assert out.shape == example_x.shape
 
 
-def test_continuous_mixer():
-    d = 784
-    size = int(jnp.sqrt(d))
+@pytest.mark.parametrize(("size",), [(28,)])
+def test_continuous_mixer(size: int):
+    size = 28
 
     data_key, params_key = jr.split(jr.PRNGKey(0), 2)
-    example_x = jr.uniform(data_key, (d,))
+    example_x = jr.uniform(data_key, (size, size))
 
-    model = models_mnist.ContinuousOutputDistributionMixer(D=d, size=size, num_blocks=4, patch_size=4, hidden_size=64, mix_patch_size=4, mix_hidden_size=4)
+    model = models_mnist.ContinuousOutputDistributionMixer((size, size), num_blocks=4, patch_size=4, hidden_size=64, mix_patch_size=4, mix_hidden_size=4)
 
     t = jnp.array(0.5)
     sigma_1 = 0.1

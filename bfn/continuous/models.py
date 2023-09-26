@@ -8,11 +8,11 @@ import flax.linen as nn
 class InnerNetwork(nn.Module):
     """Neural network that acts on continuous distribution."""
 
-    D: int  # Number of variables
+    shape: tuple[int]  # Dimensionality of the data
     inner_dim: int  # Number of inner dimensions
 
     @nn.compact
-    def __call__(self, mu: Float[Array, "D"], t: Float) -> Float[Array, "D"]:
+    def __call__(self, mu: Float[Array, "*shape"], t: Float) -> Float[Array, "*shape"]:
         """Return the output distribution of the model, given an underyling NN architecture."""
         residual = mu
 
@@ -21,7 +21,7 @@ class InnerNetwork(nn.Module):
         #radial = jnp.exp(-(t - jnp.linspace(0, 1, num=self.D))**2)
         #mu = mu + nn.Dense(features=self.D)(radial)
 
-        mu = nn.Dense(features=self.D, use_bias=True, name="position_mixer")(mu)
+        mu = nn.Dense(features=self.shape[-1], use_bias=True, name="position_mixer")(mu)
         mu = nn.tanh(mu)
         mu = nn.Dense(features=self.inner_dim, use_bias=True, name="embedding_mixer")(mu.T).T
         mu = nn.tanh(mu)
@@ -29,8 +29,8 @@ class InnerNetwork(nn.Module):
 
 
 class ScannedInnerNetwork(nn.Module):
-    D: int
-    inner_dim: int = 5
+    shape: tuple[int]  # Dimensionality of the data
+    inner_dim: int = 5  # Number of inner dimensions
 
     @nn.compact
     def __call__(self, mu, t):
@@ -44,7 +44,7 @@ class ScannedInnerNetwork(nn.Module):
             split_rngs={"params": True},
             length=10
         )
-        mu, _ = ScanInner(self.D, self.inner_dim)(mu, t)
+        mu, _ = ScanInner(self.shape, self.inner_dim)(mu, t)
         mu = mu[0, :]
         return mu
 
@@ -52,7 +52,7 @@ class ScannedInnerNetwork(nn.Module):
 class ContinuousOutputDistribution(nn.Module):
     """Module that takes in mean vector and outputs estimated data."""
 
-    D: int  # Dimensionality of the data
+    shape: tuple[int]  # Dimensionality of the data
     x_min: float = -1.0  # Lower clipping threshold
     x_max: float = 1.0  # Upper clipping threshold
     t_min: float = 1e-5  # Threshold at which x is set to zero
@@ -60,7 +60,7 @@ class ContinuousOutputDistribution(nn.Module):
     @nn.compact
     def __call__(self, mu: Float[Array, "D"], t: Float, gamma: Float):
         """Return an esimate x_hat of the data given the mean vector mu and time t."""
-        epsilon = ScannedInnerNetwork(self.D)(mu, t)
+        epsilon = ScannedInnerNetwork(self.shape)(mu, t)
 
         # Dodgy step for small t
         #x_hat = mu / gamma - epsilon * jnp.sqrt((1 - gamma) / gamma)

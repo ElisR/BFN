@@ -12,7 +12,6 @@ def flow_old(x: Float[Array, "D"], sigma_1: float, samples: int, *, key: Key, mu
     r"""Calculate the flow distribution for a certain observation as a histogram.
 
     This is an inefficient way to do it because Gaussian probability is easily evaluated.
-    TODO Directly evaluate analytic probability.
 
     Args:
         x: The observation to calculate the flow distribution for.
@@ -71,7 +70,7 @@ def flow(x: Float[Array, "D"], sigma_1: float, *, mu_range: tuple[float], bins: 
 
 
 @partial(jax.jit, static_argnums=(2,))
-def sample_mu(x: Float[Array, "D"], sigma_1: float, steps: int, *, key: Key):
+def sample_mu(x: Float[Array, "D"], sigma_1: float, steps: int, *, key: Key) -> Float[Array, "steps D"]:
     """Produce a stochastic trajectory for mu parameters, given observation.
 
     Args:
@@ -95,8 +94,8 @@ def sample_mu(x: Float[Array, "D"], sigma_1: float, steps: int, *, key: Key):
 
         mu = (rho * mu + alpha * y) / (rho + alpha)
         rho = rho + alpha
-        return (mu, rho, key), mu
+        return (mu, rho, key), (mu, y)
 
     i_s = jnp.arange(1, steps + 1)
-    _, mu_timeline = jax.lax.scan(time_step, (mu_prior, rho_0, key), i_s)
-    return mu_timeline
+    _, (mu_timeline, y_timeline) = jax.lax.scan(time_step, (mu_prior, rho_0, key), i_s)
+    return mu_timeline, y_timeline

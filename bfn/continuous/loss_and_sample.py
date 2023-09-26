@@ -6,13 +6,11 @@ import jax.random as jr
 from jaxtyping import Array, Float, Int, Key, PyTree
 import flax.linen as nn
 
-T_MIN = 1e-10
-
 
 def loss(
     dist_params: PyTree,
     output_dist: nn.Module,
-    x: Float[Array, "D"],
+    x: Float[Array, "*shape"],
     sigma_1: float,
     *,
     key: Key
@@ -29,11 +27,10 @@ def loss(
     Returns:
         The loss.
     """
-    d = output_dist.D
-    assert x.shape == (d,)
+    assert x.shape == output_dist.shape
 
     y_key, t_key = jr.split(key)
-    t = jr.uniform(t_key, minval=T_MIN)  # Use minimum time as hinted in paper
+    t = jr.uniform(t_key, minval=output_dist.t_min)  # Use minimum time as hinted in paper
     gamma = 1 - jnp.power(sigma_1, 2 * t)
 
     normals = jr.normal(y_key, shape=x.shape)
@@ -47,7 +44,7 @@ def loss(
 @partial(jax.jit, static_argnums=(1, 3))
 def sample(
     dist_params: PyTree, output_dist: nn.Module, sigma_1: Float, steps: int, *, key: Key
-) -> Float[Array, "D"]:
+) -> Float[Array, "*shape"]:
     """Sample from the Bayesian Flow Network for continuous data.
 
     Args:
@@ -57,8 +54,7 @@ def sample(
         n: The number of sampling steps.
         key: The random key to be used for sampling.
     """
-    d = output_dist.D
-    mu_prior = jnp.zeros((d,), dtype=jnp.float32)
+    mu_prior = jnp.zeros(output_dist.shape, dtype=jnp.float32)
     rho_0 = jnp.array(1.0)
 
     def time_step(mu_rho_key: tuple[Float[Array, "D"], Float, Key], i: Int):
@@ -70,7 +66,7 @@ def sample(
 
         alpha = jnp.power(sigma_1, -2 * i / steps) * (1 - jnp.power(sigma_1, 2 / steps))
         key, y_key = jr.split(key)
-        epsilon = jr.normal(y_key, shape=(d,))
+        epsilon = jr.normal(y_key, shape=output_dist.shape)
         y = x_hat + jnp.sqrt(1 / alpha) * epsilon
         mu = (rho * mu + alpha * y) / (rho + alpha)
         rho = rho + alpha

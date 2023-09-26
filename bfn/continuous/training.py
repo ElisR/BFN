@@ -1,11 +1,11 @@
 """Module for training the model."""
-import jax
-import jax.random as jr
-import jax.numpy as jnp
-import flax.linen as nn
 from functools import partial
-import optax
 
+import flax.linen as nn
+import jax
+import jax.numpy as jnp
+import jax.random as jr
+import optax
 from jaxtyping import Array, Int, Key, PyTree
 
 import bfn.continuous.loss_and_sample as las
@@ -14,7 +14,7 @@ import bfn.continuous.loss_and_sample as las
 @partial(jax.jit, static_argnums=(0, 2))
 def make_step(
     model: nn.Module,
-    x_batch: Int[Array, "N D"],
+    x_batch: Int[Array, "batch *shape"],
     optim: optax.GradientTransformation,
     opt_state,
     params: PyTree,
@@ -26,7 +26,7 @@ def make_step(
 
     Args:
         model: The BFN discrete model to be trained.
-        x_batch: The input data, a JAX array of integers of shape (N, D).
+        x_batch: The input data, a JAX array of integers of shape (batch, *shape).
         optim: Optax optimiser.
         opt_state: Optax optimiser state.
         params: The parameters of the model.
