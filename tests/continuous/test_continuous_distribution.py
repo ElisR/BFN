@@ -4,12 +4,13 @@ import pytest
 
 import bfn.continuous.loss_and_sample as las
 import bfn.continuous.models as models
+import bfn.continuous.models_simple as models_simple
 import bfn.continuous.models_mnist as models_mnist
 
 
 @pytest.mark.parametrize(("d",), [(5,), (10,), (1,)])
 def test_continuous_output_distribution(d: int):
-    model = models.ContinuousOutputDistribution((d,))
+    model = models.ContinuousOutputDistribution((d,), models_simple.ScannedInnerNetwork())
 
     key, subkey1, subkey2 = jr.split(jr.PRNGKey(0), 3)
     example_x = jr.uniform(subkey1, (d,))
@@ -58,7 +59,8 @@ def test_continuous_mixer(size: int):
     data_key, params_key = jr.split(jr.PRNGKey(0), 2)
     example_x = jr.uniform(data_key, (size, size))
 
-    model = models_mnist.ContinuousOutputDistributionMixer((size, size), num_blocks=4, patch_size=4, hidden_size=64, mix_patch_size=4, mix_hidden_size=4)
+    inner_model = models_mnist.Mixer2D(num_blocks=4, patch_size=4, hidden_size=64, mix_patch_size=4, mix_hidden_size=4)
+    model = models.ContinuousOutputDistribution((size, size), inner_model)
 
     t = jnp.array(0.5)
     sigma_1 = 0.1
