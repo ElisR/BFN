@@ -20,14 +20,14 @@ def loss(
     Args:
         dist_params: Parameters of the neural network.
         output_dist: Neural network that transforms parameters of categorical distribution.
-        x: The input data, a JAX array of floats of shape (D,).
+        x: The input data, a JAX array of floats of shape (*shape).
         sigma_1: The final value of sigma at t = 1.
         key: The random key to be used during loss calculation.
 
     Returns:
         The loss.
     """
-    assert x.shape == output_dist.shape
+    assert x.shape == output_dist.shape, "Data shape must match output distribution shape."
 
     y_key, t_key = jr.split(key)
     t = jr.uniform(t_key, minval=output_dist.t_min)  # Use minimum time as hinted in paper
@@ -57,7 +57,7 @@ def sample(
     mu_prior = jnp.zeros(output_dist.shape, dtype=jnp.float32)
     rho_0 = jnp.array(1.0)
 
-    def time_step(mu_rho_key: tuple[Float[Array, "D"], Float, Key], i: Int):
+    def time_step(mu_rho_key: tuple[Float[Array, "*shape"], Float, Key], i: Int):
         mu, rho, key = mu_rho_key
         t = (i - 1) / steps
 

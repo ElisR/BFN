@@ -36,7 +36,6 @@ class MixerBlock(nn.Module):
 
 class Mixer2D(nn.Module):
     """Basic MLP-Mixer architecture."""
-    shape: tuple[int]  # Dimensionality of the data
     num_blocks: int  # Number of mixer blocks
     patch_size: int  # Size of the patches
     hidden_size: int  # Size of the hidden layers during convolution
@@ -46,7 +45,7 @@ class Mixer2D(nn.Module):
     @nn.compact
     def __call__(self, y: Float[Array, "h w"], t: Float) -> Float[Array, "h w"]:
         """Apply MLP-Mixer to input."""
-        height, width = self.shape
+        height, width = y.shape
         assert height % self.patch_size == 0
         assert width % self.patch_size == 0
 
@@ -69,32 +68,3 @@ class Mixer2D(nn.Module):
         y = nn.ConvTranspose(features=1, kernel_size=(self.patch_size, self.patch_size), strides=(self.patch_size, self.patch_size))(y)
         y = einops.rearrange(y, "h w 1 -> h w")
         return y
-
-
-class ContinuousOutputDistributionMixer(nn.Module):
-    """Module that takes in mean vector and outputs estimated data."""
-
-    shape: tuple[int, ...]  # Dimensionality of the data
-    num_blocks: int  # Number of mixer blocks
-    patch_size: int  # Size of the patches
-    hidden_size: int  # Size of the hidden layers during convolution
-    mix_patch_size: int  # Size of the patch mixing MLP
-    mix_hidden_size: int  # Size of channel mixing MLP
-
-    x_min: float = -1.0  # Lower clipping threshold
-    x_max: float = 1.0  # Upper clipping threshold
-    t_min: float = 1e-10  # Threshold at which x is set to zero
-
-    @nn.compact
-    def __call__(self, mu: Float[Array, "h w"], t: Float, gamma: Float) -> Float[Array, "h w"]:
-        """Return an esimate x_hat of the data given the mean vector mu and time t."""
-        epsilon = Mixer2D(self.shape, self.num_blocks, self.patch_size, self.hidden_size, self.mix_patch_size, self.mix_hidden_size)(mu, t)
-
-        # Fix attempt
-        # TODO Find a nicer way
-        mu_factor = jax.lax.cond(t < self.t_min, lambda _: 0.0, lambda _: 1 / gamma, None)
-        epsilon_factor = jax.lax.cond(t < self.t_min, lambda _: 0.0, lambda _: jnp.sqrt((1 - gamma) / gamma), None)
-        x_hat = mu * mu_factor - epsilon * epsilon_factor
-
-        x_hat = jnp.clip(x_hat, a_min=self.x_min, a_max=self.x_max)
-        return x_hat

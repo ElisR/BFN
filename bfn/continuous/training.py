@@ -25,7 +25,7 @@ def make_step(
     """Calculate loss & grad for a batch and update model according to optimiser.
 
     Args:
-        model: The BFN discrete model to be trained.
+        model: The BFN continuous model to be trained.
         x_batch: The input data, a JAX array of integers of shape (batch, *shape).
         optim: Optax optimiser.
         opt_state: Optax optimiser state.
