@@ -27,14 +27,14 @@ def loss(
     Returns:
         The continous time loss.
     """
-    k, d = output_dist.K, output_dist.D
-    assert x.shape == (d,)
+    k, shape = output_dist.K, output_dist.shape
+    assert x.shape == shape
     y_key, t_key = jr.split(key)
     t = jr.uniform(t_key)
     beta_t = beta_1 * (t**2)
 
     oh_x = jax.nn.one_hot(x, k, axis=-2)
-    normals = jr.normal(y_key, shape=(k, d))
+    normals = jr.normal(y_key, shape=(k, *shape))
     y = beta_t * (k * oh_x - 1) + jnp.sqrt(beta_t * k) * normals
     thetas = jax.nn.softmax(y, axis=-2)
 
@@ -61,8 +61,8 @@ def sample(
     Returns:
         The sampled data.
     """
-    num_cats, d = output_dist.K, output_dist.D
-    theta_prior = jnp.ones((num_cats, d), dtype=jnp.float32) / num_cats
+    num_cats, shape = output_dist.K, output_dist.shape
+    theta_prior = jnp.ones((num_cats, *shape), dtype=jnp.float32) / num_cats
 
     def time_step(theta_key: tuple[Float[Array, "cats D"]], i: Int):
         theta, key = theta_key
@@ -76,7 +76,7 @@ def sample(
 
         # Sample y
         oh_k = jax.nn.one_hot(k, num_cats, axis=-2)
-        normals = jr.normal(y_key, shape=(num_cats, d))
+        normals = jr.normal(y_key, shape=(num_cats, *shape))
         y = alpha * (num_cats * oh_k - 1) + jnp.sqrt(alpha * num_cats) * normals
 
         theta_prime = y + jnp.log(theta)
