@@ -2,28 +2,22 @@ import pytest
 import jax.numpy as jnp
 import jax.random as jr
 import optax
-from jaxtyping import Int, Array
 
 import bfn.discrete.example_data as example_data
 import bfn.discrete.training as training
 import bfn.discrete.loss_and_sample as las
 import bfn.discrete.models as models
 
-@pytest.fixture(name="tokenized_strings")
-def fixture_tokenized_strings():
-    reference_string = "example string"
-    corrupted_strings = example_data.corrupt_string(reference_string, 100, 0.1)
-    tokenized_strings = [example_data.tokenize_string(string) for string in corrupted_strings]
-    return tokenized_strings
+@pytest.fixture(name="data")
+def fixture_tokenized_strings() -> example_data.StringDataset:
+    reference_string = "examplestring"
+    return example_data.StringDataset(reference_string, 100, 0.1)
 
 
-@pytest.mark.parametrize("num_epochs", [20])
-def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: int):
-    num_cats = 27
-    d = len(tokenized_strings[0])
-
-    model = models.DiscreteOutputDistribution(num_cats, d)
-    thetas_prior = jnp.ones((num_cats, d)) / num_cats
+@pytest.mark.parametrize(("num_epochs",), [(20,)])
+def test_basic_training(data: example_data.StringDataset, num_epochs: int):
+    model = models.DiscreteOutputDistribution(data.num_cats, (data.d,), models.MultipleMLP(data.num_cats))
+    thetas_prior = jnp.ones((data.num_cats, data.d)) / data.num_cats
 
     variables = model.init(jr.PRNGKey(0), thetas_prior, 1.0)
     params = variables["params"]
@@ -36,7 +30,7 @@ def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: in
     beta = 1.0
     for _ in range(num_epochs):
         epoch_loss = 0.0
-        for x in tokenized_strings:
+        for x in data:
             key, subkey = jr.split(key)
             x = jnp.expand_dims(x, 0)
             loss, params, opt_state = training.make_step(model, x, optim, opt_state, params, beta, key=subkey)
@@ -47,4 +41,4 @@ def test_basic_training(tokenized_strings: list[Int[Array, "D"]], num_epochs: in
 
     output, _ = las.sample(params, model, 1.0, 10, key=key)
     output_string = example_data.detokenize_string(output)
-    assert len(output_string) == d
+    assert len(output_string) == data.d
