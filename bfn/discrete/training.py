@@ -14,7 +14,7 @@ import bfn.discrete.loss_and_sample as las
 @partial(jax.jit, static_argnums=(0, 2))
 def make_step(
     model: nn.Module,
-    x_batch: Int[Array, "N D"],
+    x_batch: Int[Array, "N *shape"],
     optim,
     opt_state,
     params: PyTree,

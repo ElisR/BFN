@@ -12,7 +12,7 @@ class MNISTDataset(Dataset):
     def __init__(self) -> None:
         def transform(pic):
             """Function for transforming PIL image to JAX array."""
-            normalised = jnp.ravel(jnp.array(pic, dtype=jnp.float32)) / 255.0
+            normalised = jnp.array(pic, dtype=jnp.float32) / 255.0
             return 2 * normalised - 1
 
         self.mnist = MNIST(root='./data', train=False, download=True, transform=transform)

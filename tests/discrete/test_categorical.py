@@ -5,12 +5,10 @@ import pytest
 import bfn.discrete.loss_and_sample as las
 import bfn.discrete.models as models
 
-# TODO Make fixture and split up unit tests
-
 
 @pytest.mark.parametrize(("k", "d"), [(5, 10), (10, 5), (1, 1)])
 def test_discrete_output_distribution(k: int, d: int):
-    dod = models.DiscreteOutputDistribution(k, d)
+    dod = models.DiscreteOutputDistribution(k, (d,), models.MultipleMLP(k))
 
     # Test distribution
     key, subkey1, subkey2 = jr.split(jr.PRNGKey(0), 3)
